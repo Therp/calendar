@@ -672,7 +672,7 @@ class ResourceBooking(models.Model):
     def write(self, vals):
         """Sync booking with meeting if needed."""
         result = super().write(vals)
-        self._sync_meeting()
+        #self._sync_meeting()
         if vals.get("start") or "meeting_id" in vals:
             self._sync_booking_activities_date()
         return result
