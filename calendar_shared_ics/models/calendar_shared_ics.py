@@ -5,7 +5,7 @@ from datetime import timedelta
 
 import vobject
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 from odoo.tools.safe_eval import safe_eval
 
 
@@ -149,9 +149,14 @@ class CalendarSharedIcs(models.Model):
             fixed_blocks.append(line)
         return "".join(fixed_blocks)
 
-    def _combine_ics_files(self, events, files_by_event_id):
+    def _combine_ics_files(self, events, files_by_event_id, calname=None):
         """Combine individual VCALENDAR payloads into one VCALENDAR bytes."""
         combined = vobject.iCalendar()
+        if calname:
+            # clients may look in all 3 fields for setting a name
+            combined.add("X-WR-CALNAME").value = calname
+            combined.add("NAME").value = calname
+            combined.add("CALNAME").value = calname
         for ev in events:
             payload = files_by_event_id.get(ev.id)
             if not payload:
@@ -169,7 +174,9 @@ class CalendarSharedIcs(models.Model):
         self.ensure_one()
         events = self._get_events_for_export()
         files = events._get_ics_file() or {}
-        return self._combine_ics_files(events, files)
+        return self._combine_ics_files(
+            events, files, calname=self.name or _("Shared Calendar")
+        )
 
     def _get_ics_filename(self):
         """Return download filename for this feed."""
