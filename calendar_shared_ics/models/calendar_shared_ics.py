@@ -27,6 +27,14 @@ class CalendarSharedIcs(models.Model):
     )
     share_webcal_url = fields.Char(compute="_compute_share_urls", readonly=True)
     share_url = fields.Char(compute="_compute_share_urls", readonly=True)
+    only_recent_events = fields.Boolean(
+        default=True,
+        help="If enabled, only export events that ended recently or are in the future ",
+    )
+    recent_days = fields.Integer(
+        default=7,
+        help="How many days back to include for recent events",
+    )
 
     def _compute_access_url(self):
         """Adjust to modufy access url"""
@@ -89,10 +97,10 @@ class CalendarSharedIcs(models.Model):
         """Compute the calendar.event domain for this shared feed."""
         self.ensure_one()
         domain = []
-        # Limit export to recent/present/future events for faster sync.
-        # 7 days cutoff
-        cutoff = fields.Datetime.now() - timedelta(days=7)
-        domain.append(("stop", ">=", cutoff))
+        # limit events to recent_days in the past
+        if self.only_recent_events:
+            cutoff = fields.Datetime.now() - timedelta(days=self.recent_days or 0)
+            domain.append(("stop", ">=", cutoff))
         if self.apply_partner_filter and self.partner_id:
             domain.append(("partner_ids", "in", [self.partner_id.id]))
         if self.domain:
@@ -106,7 +114,7 @@ class CalendarSharedIcs(models.Model):
         domain = self._get_events_domain()
         return self.env["calendar.event"].sudo().search(domain, order="start asc")
 
-    def _fix_thunderbird_recurrence_lines(self, ics_text):
+    def _fix_recurrence_lines(self, ics_text):
         """
         Fix malformed recurrence lines seen in some _get_ics_file() outputs.
         Wrong: RRULE:DTSTART:20220425T063000
@@ -162,7 +170,7 @@ class CalendarSharedIcs(models.Model):
             if not payload:
                 continue
             ics_text = payload.decode("utf-8", errors="replace")
-            ics_text = self._fix_thunderbird_recurrence_lines(ics_text)
+            ics_text = self._fix_recurrence_lines(ics_text)
 
             cal = vobject.readOne(ics_text)
             for vev in cal.vevent_list:

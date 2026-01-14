@@ -1,5 +1,6 @@
 # Copyright 2025 Therp BV <https://therp.nl>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html)
+from datetime import timedelta
 from unittest.mock import patch
 
 import vobject
@@ -230,3 +231,38 @@ class TestCalendarSharedIcsFullNoHttp(TransactionCase):
         self.assertNotIn("RRULE:DTSTART:", text)
         # DTSTART should remain, but only once (no duplicates)
         self.assertEqual(text.count("DTSTART:20220425T063000"), 1)
+
+    def test_only_recent_events(self):
+        # Create an old event (ended 10 days ago)
+        old_stop = fields.Datetime.now() - timedelta(days=10)
+        old_start = old_stop
+        old_event = self.Event.sudo().create(
+            {
+                "name": f"{self.marker} Old Event U1",
+                "start": old_start,
+                "stop": old_stop,
+                "partner_ids": [(6, 0, [self.partner_u1.id])],
+            }
+        )
+        # Default is only_recent_events=True and recent_days=7
+        self.feed_u1.sudo().only_recent_events = True
+        self.feed_u1.sudo().recent_days = 7
+        events = self.feed_u1.sudo()._get_events_for_export()
+        self.assertIn(self.event_u1, events)
+        self.assertNotIn(old_event, events)
+
+    def test_not_only_recent_events(self):
+        old_stop = fields.Datetime.now() - timedelta(days=10)
+        old_start = old_stop
+        old_event = self.Event.sudo().create(
+            {
+                "name": f"{self.marker} Old Event U1 2",
+                "start": old_start,
+                "stop": old_stop,
+                "partner_ids": [(6, 0, [self.partner_u1.id])],
+            }
+        )
+        self.feed_u1.sudo().only_recent_events = False
+        events = self.feed_u1.sudo()._get_events_for_export()
+        self.assertIn(self.event_u1, events)
+        self.assertIn(old_event, events)
