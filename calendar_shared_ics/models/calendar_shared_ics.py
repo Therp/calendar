@@ -1,6 +1,7 @@
 # Copyright 2025 Therp BV <https://therp.nl>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html)
 import re
+from datetime import timedelta
 
 import vobject
 
@@ -88,6 +89,10 @@ class CalendarSharedIcs(models.Model):
         """Compute the calendar.event domain for this shared feed."""
         self.ensure_one()
         domain = []
+        # Limit export to recent/present/future events for faster sync.
+        # 7 days cutoff
+        cutoff = fields.Datetime.now() - timedelta(days=7)
+        domain.append(("stop", ">=", cutoff))
         if self.apply_partner_filter and self.partner_id:
             domain.append(("partner_ids", "in", [self.partner_id.id]))
         if self.domain:
