@@ -18,12 +18,26 @@ class CalendarSharedIcs(models.Model):
     name = fields.Char(required=True, default="Shared calendar")
     active = fields.Boolean(default=True)
     partner_id = fields.Many2one("res.partner", index=True)
+    apply_user_filter = fields.Boolean(
+        default=True,
+        help="If enabled, restrict partner selection to partners linked to users.",
+    )
+    include_internal_users = fields.Boolean(
+        default=True,
+        help="If enabled, include internal users in partner selection.",
+    )
+    include_portal_users = fields.Boolean(
+        default=False,
+        help="If enabled, include portal users in partner selection.",
+    )
+
     apply_partner_filter = fields.Boolean(
         default=True,
         help="If enabled, only events where this partner is an attendee are exported.",
     )
     domain = fields.Char(
         help="Optional extra domain (to safe_eval)",
+        string="Additional Filtering",
     )
     share_webcal_url = fields.Char(compute="_compute_share_urls", readonly=True)
     share_url = fields.Char(compute="_compute_share_urls", readonly=True)
@@ -37,7 +51,7 @@ class CalendarSharedIcs(models.Model):
     )
 
     def _compute_access_url(self):
-        """Adjust to modufy access url"""
+        """Adjust to modify access url"""
         res = super()._compute_access_url()
         base_url = self.get_base_url()
         for cal in self:
@@ -55,6 +69,28 @@ class CalendarSharedIcs(models.Model):
             cal.share_webcal_url = ics_url.replace("https://", "webcal://").replace(
                 "http://", "webcal://"
             )
+
+    @api.onchange("apply_user_filter", "include_internal_users", "include_portal_users")
+    def _onchange_partner_id_domain(self):
+        """Restrict partner_id selection to partners that are linked to users."""
+        if not self.apply_user_filter:
+            return {"domain": {"partner_id": []}}
+        if not self.include_internal_users and not self.include_portal_users:
+            return {"domain": {"partner_id": [("id", "=", 0)]}}
+        user_domain = []
+        if self.include_internal_users:
+            user_domain.append(("groups_id", "in", self.env.ref("base.group_user").id))
+        if self.include_portal_users:
+            user_domain.append(
+                ("groups_id", "in", self.env.ref("base.group_portal").id)
+            )
+        # if both at ticked, and an OR
+        if len(user_domain) == 1:
+            users = self.env["res.users"].search(user_domain)
+        else:
+            users = self.env["res.users"].search(["|"] + user_domain)
+        partner_ids = users.mapped("partner_id").ids
+        return {"domain": {"partner_id": [("id", "in", partner_ids)]}}
 
     def action_reset_access_token(self):
         """Rotate token (invalidate old subscription URLs)."""
