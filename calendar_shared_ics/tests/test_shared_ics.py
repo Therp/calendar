@@ -2,6 +2,8 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html)
 from unittest.mock import patch
 
+import vobject
+
 from odoo import fields
 from odoo.exceptions import AccessError
 from odoo.tests.common import TransactionCase, tagged
@@ -168,3 +170,63 @@ class TestCalendarSharedIcsFullNoHttp(TransactionCase):
             self.assertIn("BEGIN:VCALENDAR", text)
             self.assertIn(f"{self.marker} Event U1", text)
             self.assertIn("END:VCALENDAR", text)
+
+    def test_rrule_dtstart(self):
+        events = self.feed_u1.sudo()._get_events_for_export()
+        self.assertEqual(events, self.event_u1)
+
+        malformed = (
+            b"BEGIN:VCALENDAR\r\n"
+            b"VERSION:2.0\r\n"
+            b"PRODID:-//TEST//EN\r\n"
+            b"BEGIN:VEVENT\r\n"
+            b"UID:test-uid-1\r\n"
+            b"RRULE:DTSTART:20220425T063000\r\n"
+            b"RRULE:FREQ=WEEKLY;UNTIL=20220704T235959;BYDAY=MO\r\n"
+            b"SUMMARY:Recurrent Test\r\n"
+            b"END:VEVENT\r\n"
+            b"END:VCALENDAR\r\n"
+        )
+        with patch.object(
+            type(events), "_get_ics_file", return_value={self.event_u1.id: malformed}
+        ):
+            out = self.feed_u1.sudo()._render_ics_content()
+        text = out.decode("utf-8", errors="replace")
+        # The malformed line must be gone
+        self.assertNotIn("RRULE:DTSTART:", text)
+        # RRULE should remain present
+        self.assertIn("RRULE:FREQ=WEEKLY;UNTIL=20220704T235959;BYDAY=MO", text)
+        # Ensure the output is valid VCALENDAR and VEVENT has dtstart + rrule
+        cal = vobject.readOne(text)
+        self.assertTrue(getattr(cal, "vevent_list", None))
+        ve = cal.vevent_list[0]
+        self.assertTrue(hasattr(ve, "rrule"))
+        self.assertIn("FREQ=WEEKLY", ve.rrule.value)
+
+    def test_rrule_dtstart_dropped(self):
+        events = self.feed_u1.sudo()._get_events_for_export()
+        self.assertEqual(events, self.event_u1)
+        malformed_with_dtstart = (
+            b"BEGIN:VCALENDAR\r\n"
+            b"VERSION:2.0\r\n"
+            b"PRODID:-//TEST//EN\r\n"
+            b"BEGIN:VEVENT\r\n"
+            b"UID:test-uid-2\r\n"
+            b"DTSTART:20220425T063000\r\n"
+            b"RRULE:DTSTART:20220425T063000\r\n"
+            b"RRULE:FREQ=WEEKLY;UNTIL=20220704T235959;BYDAY=MO\r\n"
+            b"SUMMARY:Recurrent Test 2\r\n"
+            b"END:VEVENT\r\n"
+            b"END:VCALENDAR\r\n"
+        )
+        with patch.object(
+            type(events),
+            "_get_ics_file",
+            return_value={self.event_u1.id: malformed_with_dtstart},
+        ):
+            out = self.feed_u1.sudo()._render_ics_content()
+        text = out.decode("utf-8", errors="replace")
+        # Malformed line removed
+        self.assertNotIn("RRULE:DTSTART:", text)
+        # DTSTART should remain, but only once (no duplicates)
+        self.assertEqual(text.count("DTSTART:20220425T063000"), 1)

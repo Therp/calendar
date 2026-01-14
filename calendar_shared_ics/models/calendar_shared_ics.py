@@ -1,5 +1,7 @@
 # Copyright 2025 Therp BV <https://therp.nl>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html)
+import re
+
 import vobject
 
 from odoo import api, fields, models
@@ -99,6 +101,49 @@ class CalendarSharedIcs(models.Model):
         domain = self._get_events_domain()
         return self.env["calendar.event"].sudo().search(domain, order="start asc")
 
+    def _fix_thunderbird_recurrence_lines(self, ics_text):
+        """
+        Fix malformed recurrence lines seen in some _get_ics_file() outputs.
+        Wrong: RRULE:DTSTART:20220425T063000
+        Right: DTSTART:20220425T063000
+        """
+        if "RRULE:DTSTART:" not in ics_text:
+            return ics_text
+        # If the VEVENT already has a proper DTSTART, drop the malformed line.
+        # Otherwise, rewrite the malformed line into DTSTART.
+        fixed_blocks = []
+        in_vevent = False
+        vevent_lines = []
+        for line in ics_text.splitlines(True):
+            if line.startswith("BEGIN:VEVENT"):
+                in_vevent = True
+                vevent_lines = [line]
+                continue
+            if in_vevent:
+                vevent_lines.append(line)
+                if line.startswith("END:VEVENT"):
+                    block = "".join(vevent_lines)
+                    if "RRULE:DTSTART:" in block:
+                        if "DTSTART:" in block:
+                            block = re.sub(
+                                r"^RRULE:DTSTART:.*\r?\n",
+                                "",
+                                block,
+                                flags=re.MULTILINE,
+                            )
+                        else:
+                            block = re.sub(
+                                r"^RRULE:DTSTART:(.+)$",
+                                r"DTSTART:\1",
+                                block,
+                                flags=re.MULTILINE,
+                            )
+                    fixed_blocks.append(block)
+                    in_vevent = False
+                continue
+            fixed_blocks.append(line)
+        return "".join(fixed_blocks)
+
     def _combine_ics_files(self, events, files_by_event_id):
         """Combine individual VCALENDAR payloads into one VCALENDAR bytes."""
         combined = vobject.iCalendar()
@@ -107,6 +152,8 @@ class CalendarSharedIcs(models.Model):
             if not payload:
                 continue
             ics_text = payload.decode("utf-8", errors="replace")
+            ics_text = self._fix_thunderbird_recurrence_lines(ics_text)
+
             cal = vobject.readOne(ics_text)
             for vev in cal.vevent_list:
                 combined.add(vev)
