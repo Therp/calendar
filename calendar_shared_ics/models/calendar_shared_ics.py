@@ -58,15 +58,18 @@ class CalendarSharedIcs(models.Model):
             cal.access_url = f"{base_url}/calendar/shared/{cal.id}/ics"
         return res
 
-    @api.depends("access_token")
+    @api.depends("access_url", "access_token")
     def _compute_share_urls(self):
-        """Compute actual share urls (https://, webcall:)"""
-        base_url = self.get_base_url()
+        """Compute actual share urls (https://, webcal:) from access_url."""
         for cal in self:
             cal._portal_ensure_token()
-            ics_url = f"{base_url}/calendar/shared/{cal.id}/ics?access_token={cal.access_token}"
-            cal.share_url = ics_url
-            cal.share_webcal_url = ics_url.replace("https://", "webcal://").replace(
+            if not cal.access_url:
+                cal.share_url = False
+                cal.share_webcal_url = False
+                continue
+            url = "%s?access_token=%s" % (cal.access_url, cal.access_token)
+            cal.share_url = url
+            cal.share_webcal_url = url.replace("https://", "webcal://").replace(
                 "http://", "webcal://"
             )
 
@@ -202,7 +205,6 @@ class CalendarSharedIcs(models.Model):
                 continue
             ics_text = payload.decode("utf-8", errors="replace")
             ics_text = self._fix_recurrence_lines(ics_text)
-
             cal = vobject.readOne(ics_text)
             for vev in cal.vevent_list:
                 combined.add(vev)
