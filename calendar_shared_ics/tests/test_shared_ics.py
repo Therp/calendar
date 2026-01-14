@@ -266,3 +266,18 @@ class TestCalendarSharedIcsFullNoHttp(TransactionCase):
         events = self.feed_u1.sudo()._get_events_for_export()
         self.assertIn(self.event_u1, events)
         self.assertIn(old_event, events)
+
+    def test_reset_access_token(self):
+        feed = self.feed_u1
+        old_token = feed.sudo().access_token
+        self.assertTrue(old_token)
+        # Regular user must NOT be able to rotate token
+        with self.assertRaises(AccessError):
+            feed.with_user(self.user_u1).action_reset_access_token()
+        feed_refreshed = self.Shared.sudo().browse(feed.id)
+        self.assertEqual(feed_refreshed.access_token, old_token)
+        # Manager should be allowed to rotate
+        feed.with_user(self.user_mgr).action_reset_access_token()
+        feed_refreshed2 = self.Shared.sudo().browse(feed.id)
+        self.assertTrue(feed_refreshed2.access_token)
+        self.assertNotEqual(feed_refreshed2.access_token, old_token)
