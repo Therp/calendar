@@ -20,6 +20,10 @@ class TestFilterPrivateEvents(TestCommon):
         ICP = cls.env["ir.config_parameter"].sudo()
         ICP.set_param(FILTER_PRIVATE_EVENTS, True)
 
+    @classmethod
+    def base_url(cls):
+        return "http://127.0.0.1:8069"
+
     def test_filter_private_events(self):
         """Test private events are not created in Odoo from Outlook."""
         Calendar = self.env["calendar.event"]
