@@ -4,11 +4,11 @@
 {
     "name": "Microsoft Calendar Filter",
     "summary": "Limit the records that are synchronized from Outlook to Odoo",
-    "version": "16.0.1.0.0",
+    "version": "19.0.1.0.0",
     "category": "Appointments",
     "website": "https://github.com/OCA/calendar",
     "author": "Odoo Community Association (OCA), Therp BV",
-    "maintainers": ["NL66278"],
+    "maintainers": ["NL66278", "ntsirintanis"],
     "license": "AGPL-3",
     "depends": [
         "microsoft_calendar",

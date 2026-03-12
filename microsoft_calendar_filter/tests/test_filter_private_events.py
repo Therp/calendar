@@ -2,7 +2,9 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 from unittest.mock import patch
 
-from odoo.addons.microsoft_calendar.models.res_users import User
+from lxml import html
+
+from odoo.addons.microsoft_calendar.models.res_users import ResUsers
 from odoo.addons.microsoft_calendar.tests.common import TestCommon, mock_get_token
 from odoo.addons.microsoft_calendar.utils.microsoft_calendar import (
     MicrosoftCalendarService,
@@ -12,13 +14,21 @@ from odoo.addons.microsoft_calendar.utils.microsoft_event import MicrosoftEvent
 from ..models.res_config_settings import FILTER_PRIVATE_EVENTS
 
 
-@patch.object(User, "_get_microsoft_calendar_token", mock_get_token)
+def _html_text(value):
+    return html.fromstring(str(value)).text_content().strip()
+
+
+@patch.object(ResUsers, "_get_microsoft_calendar_token", mock_get_token)
 class TestFilterPrivateEvents(TestCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         ICP = cls.env["ir.config_parameter"].sudo()
         ICP.set_param(FILTER_PRIVATE_EVENTS, True)
+
+    @classmethod
+    def base_url(cls):
+        return "http://127.0.0.1:8069"
 
     def test_filter_private_events(self):
         """Test private events are not created in Odoo from Outlook."""
@@ -32,7 +42,15 @@ class TestFilterPrivateEvents(TestCommon):
         new_records = records - existing_records
         self.assertEqual(len(new_records), 1)
         self.assertEqual(new_records.privacy, "public")
-        self.assert_odoo_event(new_records, expected_event)
+
+        self.assert_odoo_event(
+            new_records,
+            {k: v for k, v in expected_event.items() if k != "description"},
+        )
+        self.assertEqual(
+            _html_text(new_records.description),
+            _html_text(expected_event["description"]),
+        )
 
     def test_remove_ms_private_events(self):
         """Test public MS event that becomes private will be deleted."""

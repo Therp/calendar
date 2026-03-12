@@ -88,10 +88,13 @@ promote its widespread use.
 .. |maintainer-NL66278| image:: https://github.com/NL66278.png?size=40px
     :target: https://github.com/NL66278
     :alt: NL66278
+.. |maintainer-ntsirintanis| image:: https://github.com/ntsirintanis.png?size=40px
+    :target: https://github.com/ntsirintanis
+    :alt: ntsirintanis
 
-Current `maintainer <https://odoo-community.org/page/maintainer-role>`__:
+Current `maintainers <https://odoo-community.org/page/maintainer-role>`__:
 
-|maintainer-NL66278| 
+|maintainer-NL66278| |maintainer-ntsirintanis| 
 
 This module is part of the `OCA/calendar <https://github.com/OCA/calendar/tree/19.0/microsoft_calendar_filter>`_ project on GitHub.
 

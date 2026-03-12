@@ -8,7 +8,7 @@ enters the database through set_param or direct create/write.
 Direct SQL and internal _create or _write are not covered.
 """
 
-from odoo import _, api, models
+from odoo import api, models
 from odoo.exceptions import ValidationError
 from odoo.tools.safe_eval import safe_eval
 
@@ -32,7 +32,7 @@ class IrConfigParameter(models.Model):
                 except Exception as exc:
                     message = exc.msg if hasattr(exc, "msg") else str(exc)
                     raise ValidationError(
-                        _(
+                        self.env._(
                             "Domain %(domain_text)s is invalid: %(message)s",
                             domain_text=domain_text,
                             message=message,

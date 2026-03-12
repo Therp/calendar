@@ -1,7 +1,7 @@
 # Copyright 2026 Therp BV <https://therp.nl>.
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 from odoo import models
-from odoo.osv.expression import AND
+from odoo.fields import Domain
 from odoo.tools.safe_eval import safe_eval
 
 from .res_config_settings import FILTER_ODOO_EVENTS
@@ -22,4 +22,4 @@ class CalendarEvent(models.Model):
         if domain_text in ("", "[]"):
             return extended_domain
         filter_domain = safe_eval(domain_text)
-        return AND([extended_domain, filter_domain])
+        return list(Domain(extended_domain) & Domain(filter_domain))
