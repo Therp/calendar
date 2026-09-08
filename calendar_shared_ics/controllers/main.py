@@ -16,13 +16,13 @@ class CalendarSharedIcsController(Controller):
         # takes place in calendar.shared.ics
         shared = shared.sudo()
         if not shared.exists() or not shared.active:
-            return request.not_found()
+            raise request.not_found()
         if not shared._check_access_token(kwargs.get("access_token")):
-            return request.not_found()
+            raise request.not_found()
         try:
             content = shared._render_ics_content()
         except Exception:
-            return request.not_found()
+            raise request.not_found() from None
         filename = shared._get_ics_filename()
         return request.make_response(
             content,
@@ -45,9 +45,9 @@ class CalendarSharedIcsController(Controller):
         # and also login in the backend, if internal
         shared = shared.sudo()
         if not shared.exists() or not shared.active:
-            return request.not_found()
+            raise request.not_found()
         if not shared._check_access_token(kwargs.get("access_token")):
-            return request.not_found()
+            raise request.not_found()
         shared._portal_ensure_token()
         backend_url = "%s/web#id=%s&model=%s&view_type=form" % (
             shared.get_base_url(),
