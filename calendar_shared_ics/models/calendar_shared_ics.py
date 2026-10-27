@@ -105,8 +105,7 @@ class CalendarSharedIcs(models.Model):
     def action_reset_access_token(self):
         """Rotate token (invalidate old subscription URLs)."""
         # Enforce security
-        self.check_access_rights("write")
-        self.check_access_rule("write")
+        self.check_access("write")
         for cal in self:
             cal.access_token = False
             cal._portal_ensure_token()

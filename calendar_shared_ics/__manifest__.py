@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html)
 {
     "name": "Shared ICS calendars (token-protected)",
-    "version": "16.0.1.0.0",
+    "version": "19.0.1.0.0",
     "category": "Calendar",
     "summary": "Share readonly calendar feeds via ICS with access tokens",
     "license": "AGPL-3",

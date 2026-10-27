@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import vobject
 
-from odoo import fields
+from odoo import Command, fields
 from odoo.exceptions import AccessError
 from odoo.tests.common import TransactionCase, tagged
 
@@ -34,7 +34,6 @@ class TestCalendarSharedIcsFullNoHttp(TransactionCase):
                 "login": "ics_nohttp_manager",
                 "password": "ics_nohttp_manager",
                 "partner_id": self.partner_mgr.id,
-                "groups_id": [(6, 0, [self.group_user.id, self.group_manager.id])],
             }
         )
         self.user_u1 = self.Users.create(
@@ -43,7 +42,6 @@ class TestCalendarSharedIcsFullNoHttp(TransactionCase):
                 "login": "ics_nohttp_user1",
                 "password": "ics_nohttp_user1",
                 "partner_id": self.partner_u1.id,
-                "groups_id": [(6, 0, [self.group_user.id])],
             }
         )
         self.user_u2 = self.Users.create(
@@ -52,9 +50,15 @@ class TestCalendarSharedIcsFullNoHttp(TransactionCase):
                 "login": "ics_nohttp_user2",
                 "password": "ics_nohttp_user2",
                 "partner_id": self.partner_u2.id,
-                "groups_id": [(6, 0, [self.group_user.id])],
             }
         )
+
+        self.group_user.user_ids = [
+            Command.link(self.user_mgr.id),
+            Command.link(self.user_u1.id),
+            Command.link(self.user_u2.id),
+        ]
+        self.group_manager.user_ids = [Command.link(self.user_mgr.id)]
         # Feeds
         self.feed_u1 = self.Shared.sudo().create(
             {
@@ -143,9 +147,7 @@ class TestCalendarSharedIcsFullNoHttp(TransactionCase):
 
     def test_domain_extra_filter(self):
         # exclude U1 event by name
-        self.feed_u1.sudo().domain = "[('name', '!=', '%s')]" % (
-            f"{self.marker} Event U1"
-        )
+        self.feed_u1.sudo().domain = f"[('name', '!=', '{self.marker} Event U1')]"
         events = self.feed_u1.sudo()._get_events_for_export()
         self.assertNotIn(self.event_u1, events)
 
