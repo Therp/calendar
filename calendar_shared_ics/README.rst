@@ -1,3 +1,7 @@
+.. image:: https://odoo-community.org/readme-banner-image
+   :target: https://odoo-community.org/get-involved?utm_source=readme
+   :alt: Odoo Community Association
+
 ======================================
 Shared ICS calendars (token-protected)
 ======================================
@@ -13,67 +17,72 @@ Shared ICS calendars (token-protected)
 .. |badge1| image:: https://img.shields.io/badge/maturity-Beta-yellow.png
     :target: https://odoo-community.org/page/development-status
     :alt: Beta
-.. |badge2| image:: https://img.shields.io/badge/licence-AGPL--3-blue.png
+.. |badge2| image:: https://img.shields.io/badge/license-AGPL--3-blue.png
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 .. |badge3| image:: https://img.shields.io/badge/github-OCA%2Fcalendar-lightgray.png?logo=github
-    :target: https://github.com/OCA/calendar/tree/16.0/calendar_shared_ics
+    :target: https://github.com/OCA/calendar/tree/19.0/calendar_shared_ics
     :alt: OCA/calendar
 .. |badge4| image:: https://img.shields.io/badge/weblate-Translate%20me-F47D42.png
-    :target: https://translation.odoo-community.org/projects/calendar-16-0/calendar-16-0-calendar_shared_ics
+    :target: https://translation.odoo-community.org/projects/calendar-19-0/calendar-19-0-calendar_shared_ics
     :alt: Translate me on Weblate
 .. |badge5| image:: https://img.shields.io/badge/runboat-Try%20me-875A7B.png
-    :target: https://runboat.odoo-community.org/builds?repo=OCA/calendar&target_branch=16.0
+    :target: https://runboat.odoo-community.org/builds?repo=OCA/calendar&target_branch=19.0
     :alt: Try me on Runboat
 
 |badge1| |badge2| |badge3| |badge4| |badge5|
 
-This module allows sharing an Odoo calendar as a read-only ICS feed that can be
-subscribed to in external calendar clients such as Outlook, Google Calendar,
-and Thunderbird.
+This module allows sharing an Odoo calendar as a read-only ICS feed that
+can be subscribed to in external calendar clients such as Outlook,
+Google Calendar, and Thunderbird.
 
-The calendar is exposed via a public URL protected by an access token and can be
-added as a network calendar (ICS / ``webcal://``). External calendar clients periodically
-refresh the feed, providing near-real-time visibility of Odoo events without any
-write-back capability.
+The calendar is exposed via a public URL protected by an access token
+and can be added as a network calendar (ICS / ``webcal://``). External
+calendar clients periodically refresh the feed, providing near-real-time
+visibility of Odoo events without any write-back capability.
 
-Odoo includes bidirectional calendar synchronisation with external providers such as
-Outlook and Google Calendar. In practice, however, this integration is not always
-sufficiently robust and can suffer from functional limitations, data inconsistencies,
-or bugs—especially in environments with complex recurrence rules, shared resources,
-or high event volumes.
+Odoo includes bidirectional calendar synchronisation with external
+providers such as Outlook and Google Calendar. In practice, however,
+this integration is not always sufficiently robust and can suffer from
+functional limitations, data inconsistencies, or bugs—especially in
+environments with complex recurrence rules, shared resources, or high
+event volumes.
 
-This module provides a simple, reliable, and intentionally one-directional
-alternative:
+This module provides a simple, reliable, and intentionally
+one-directional alternative:
 
-* Events are exported from Odoo as a **read-only ICS calendar**
-* External clients periodically fetch the feed
-* No changes are ever written back into Odoo
-* Old events can be excluded by default to improve synchronisation performance
+-  Events are exported from Odoo as a **read-only ICS calendar**
+-  External clients periodically fetch the feed
+-  No changes are ever written back into Odoo
+-  Old events can be excluded by default to improve synchronisation
+   performance
 
 Typical use cases include:
 
-* Sharing planning or resource bookings with internal employees
-* Providing customers or partners with insight into scheduled events
-* Publishing operational calendars without exposing the Odoo backend
-* Avoiding conflicts or data corruption caused by two-way synchronisation
+-  Sharing planning or resource bookings with internal employees
+-  Providing customers or partners with insight into scheduled events
+-  Publishing operational calendars without exposing the Odoo backend
+-  Avoiding conflicts or data corruption caused by two-way
+   synchronisation
 
 Each shared calendar feed can be configured individually, including:
 
-* Restricting events to a specific attendee (partner)
-* Applying additional custom event filters
-* Limiting exports to recent and future events only
-* Generating and rotating access tokens
-* Sharing the feed via the standard Odoo portal share wizard
+-  Restricting events to a specific attendee (partner)
+-  Applying additional custom event filters
+-  Limiting exports to recent and future events only
+-  Generating and rotating access tokens
+-  Sharing the feed via the standard Odoo portal share wizard
 
 **Security notice**
 
-The calendar feed is protected solely by an **access token embedded in the URL**.
-Anyone in possession of this URL can view the calendar contents.
+The calendar feed is protected solely by an **access token embedded in
+the URL**. Anyone in possession of this URL can view the calendar
+contents.
 
-The token grants **read-only access** and does **not** allow modification of data or
-configuration of the feed. Nevertheless, the URL should be treated as confidential and
-shared only with trusted recipients.
+The token grants **read-only access** and does **not** allow
+modification of data or configuration of the feed. Nevertheless, the URL
+should be treated as confidential and shared only with trusted
+recipients.
 
 **Table of contents**
 
@@ -83,18 +92,18 @@ shared only with trusted recipients.
 Usage
 =====
 
-
 Only users with the *Shared ICS manager* role can create or modify
 shared calendar feeds.
 
-#. Go to *Calendar → Configuration → Shared ICS*
-#. Create a new *Shared ICS calendar*
-#. Configure the feed:
-   
-   * Select the **partner** whose events should be exported
-   * Optionally restrict events further using **Additional Filtering**
-   * Optionally limit the feed to **recent and future events only**
-   * Adjust user-related filters to easily select internal or portal users
+1. Go to *Calendar → Configuration → Shared ICS*
+2. Create a new *Shared ICS calendar*
+3. Configure the feed:
+
+   -  Select the **partner** whose events should be exported
+   -  Optionally restrict events further using **Additional Filtering**
+   -  Optionally limit the feed to **recent and future events only**
+   -  Adjust user-related filters to easily select internal or portal
+      users
 
 Each record represents one independent, read-only calendar feed.
 
@@ -103,44 +112,45 @@ create, modify, or delete shared calendars.
 
 Generate a share link
 
-#. Open the shared calendar feed record
-#. Click **Share**
-#. The standard Odoo *Share* wizard will open
-#. Select one or more recipients and send the email
+1. Open the shared calendar feed record
+2. Click **Share**
+3. The standard Odoo *Share* wizard will open
+4. Select one or more recipients and send the email
 
-The email contains a link to a landing page where the recipient can
-copy the actual subscription URL.
+The email contains a link to a landing page where the recipient can copy
+the actual subscription URL.
 
 Subscribe from an external calendar
 
-#. Open the link from the email
-#. Copy either the **``webcal://``** or **``https://``** URL shown on the page
-#. Add it as a network / public calendar in your calendar client
+1. Open the link from the email
+2. Copy either the **\``webcal://\`\`** or **\``https://\`\`** URL shown
+   on the page
+3. Add it as a network / public calendar in your calendar client
 
 Examples:
 
-* **Outlook**
-  
-  *Add calendar → Subscribe from web*
+-  **Outlook**
 
-* **Google Calendar**
-  
-  *Settings → Add calendar → From URL*
+   *Add calendar → Subscribe from web*
 
-* **Thunderbird**
-  
-  *New Calendar → On the Network → iCalendar (ICS)*
+-  **Google Calendar**
 
-The external calendar will periodically refresh the feed.
-All events are **read-only** and cannot be modified from the external client.
+   *Settings → Add calendar → From URL*
+
+-  **Thunderbird**
+
+   *New Calendar → On the Network → iCalendar (ICS)*
+
+The external calendar will periodically refresh the feed. All events are
+**read-only** and cannot be modified from the external client.
 
 Rotate access token (optional)
 
 If a subscription URL is compromised:
 
-#. Open the shared calendar feed
-#. Click **Rotate access token**
-#. A new token is generated immediately
+1. Open the shared calendar feed
+2. Click **Rotate access token**
+3. A new token is generated immediately
 
 All previously issued URLs stop working at once, while the new URL
 continues to function without further configuration.
@@ -148,9 +158,9 @@ continues to function without further configuration.
 Known issues / Roadmap
 ======================
 
-* Optional **IP restriction** for shared calendar feeds
-* Optional **expiration date** for access tokens
-* Per-feed refresh hints / cache control options
+-  Optional **IP restriction** for shared calendar feeds
+-  Optional **expiration date** for access tokens
+-  Per-feed refresh hints / cache control options
 
 Bug Tracker
 ===========
@@ -158,7 +168,7 @@ Bug Tracker
 Bugs are tracked on `GitHub Issues <https://github.com/OCA/calendar/issues>`_.
 In case of trouble, please check there if your issue has already been reported.
 If you spotted it first, help us to smash it by providing a detailed and welcomed
-`feedback <https://github.com/OCA/calendar/issues/new?body=module:%20calendar_shared_ics%0Aversion:%2016.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
+`feedback <https://github.com/OCA/calendar/issues/new?body=module:%20calendar_shared_ics%0Aversion:%2019.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
 
 Do not contact contributors directly about support or help with technical issues.
 
@@ -166,17 +176,17 @@ Credits
 =======
 
 Authors
-~~~~~~~
+-------
 
 * Therp BV
 
 Contributors
-~~~~~~~~~~~~
+------------
 
-* Nikos Tsirintanis <ntsirintanis@therp.nl>
+-  Nikos Tsirintanis <ntsirintanis@therp.nl>
 
 Maintainers
-~~~~~~~~~~~
+-----------
 
 This module is maintained by the OCA.
 
@@ -196,6 +206,6 @@ Current `maintainer <https://odoo-community.org/page/maintainer-role>`__:
 
 |maintainer-ntsirintanis| 
 
-This module is part of the `OCA/calendar <https://github.com/OCA/calendar/tree/16.0/calendar_shared_ics>`_ project on GitHub.
+This module is part of the `OCA/calendar <https://github.com/OCA/calendar/tree/19.0/calendar_shared_ics>`_ project on GitHub.
 
 You are welcome to contribute. To learn how please visit https://odoo-community.org/page/Contribute.

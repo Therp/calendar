@@ -1,5 +1,4 @@
 <odoo>
-
     <record id="rule_calendar_shared_ics_manager_all" model="ir.rule">
         <field name="name">calendar.shared.ics: managers see all</field>
         <field name="model_id" ref="model_calendar_shared_ics" />
@@ -24,5 +23,4 @@
         <field name="perm_create" eval="0" />
         <field name="perm_unlink" eval="0" />
     </record>
-
 </odoo>

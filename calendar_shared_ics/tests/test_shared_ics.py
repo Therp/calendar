@@ -161,7 +161,7 @@ class TestCalendarSharedIcsFullNoHttp(TransactionCase):
 
         ics_u1 = (
             b"BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:%s\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
-            % ((f"{self.marker} Event U1").encode("utf-8"))
+            % ((f"{self.marker} Event U1").encode())
         )
         with patch.object(
             type(events), "_get_ics_file", return_value={self.event_u1.id: ics_u1}

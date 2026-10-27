@@ -99,5 +99,4 @@
         parent="calendar.calendar_menu_config"
         action="action_calendar_shared_ics"
     />
-
 </odoo>
